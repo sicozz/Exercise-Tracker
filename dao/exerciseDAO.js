@@ -57,7 +57,7 @@ export default class ExerciseDAO {
                 _id: user._id,
                 username: user.username,
                 date: ex.date.toDateString(),
-                duration: ex.duration,
+                duration: parseInt(ex.duration),
                 description: ex.description
             }
         } catch(err) {
@@ -67,34 +67,6 @@ export default class ExerciseDAO {
     }
 
     static async getExercises(userId, from, to, limit) {
-        /*
-        let pipeline = [
-            {
-                $match: {
-                    _id: new ObjectId(userId)
-                }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    username: 1,
-                    exercises: {
-                        $filter: {
-                            input: "$exercises",
-                            as: "ex",
-                            cond: {
-                                $and: [
-                                    { $gt: [ "$$ex.date", from ] },
-                                    { $lt: [ "$$ex.date", to ] },
-                                ]
-                            }
-                        }
-                    }
-                }
-            }
-        ]
-        */
-
         try {
             const user = await exercises.findOne({ _id: ObjectId(userId) })
 
@@ -118,11 +90,17 @@ export default class ExerciseDAO {
             let ans = {
                 _id: ObjectId(user.id),
                 username: user.username,
-                from: from.toDateString(),
-                to: to.toDateString(),
-                count: mapped.length,
-                log: mapped
             }
+
+            if (from) {
+                ans.from = from.toDateString()
+            }
+            if (to) {
+                ans.to = to.toDateString()
+            }
+
+            ans.count = mapped.length
+            ans.log = mapped
             
             return ans
         } catch(err) {
