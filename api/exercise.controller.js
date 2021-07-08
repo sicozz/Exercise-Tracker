@@ -1,5 +1,4 @@
 import ExerciseDAO from '../dao/exerciseDAO.js'
-import dateFormat from 'dateformat'
 
 export default class ExerciseCtrl {
 
@@ -10,7 +9,8 @@ export default class ExerciseCtrl {
 
     static async apiPostUser(req, res, next) {
         const user = {
-            username: req.body.username
+            username: req.body.username,
+            exercises: []
         }
         const addUserRes = await ExerciseDAO.addUser(user)
         res.send(addUserRes)
@@ -18,19 +18,21 @@ export default class ExerciseCtrl {
 
     static async apiGetExercises(req, res, next) {
         const id = req.params._id
-        const from = req.query.from || null
-        const to = req.query.to || null
-        const getExercisesRes = await ExerciseDAO.getExercises(id, from, to)
+        const from = req.query.from ? new Date(req.query.from) : undefined
+        const to = req.query.to ? new Date(req.query.to) : undefined
+        const limit = req.query.limit ? parseInt(req.query.limit) : undefined
+        const getExercisesRes = await ExerciseDAO.getExercises(id, from, to, limit)
         res.send(getExercisesRes)
     }
 
     static async apiPostExercise(req, res, next) {
+        const id = req.params._id
         const exercise = {
             description: req.body.description,
             duration: req.body.duration,
-            date: req.doby.date || dateFormat(new Date(), 'yyyy-mm-dd')
+            date: req.body.date ? new Date(req.body.date) : new Date()
         }
-        const addExerciseRes = await ExerciseDAO.addExercise(exercise)
+        const addExerciseRes = await ExerciseDAO.addExercise(id, exercise)
         res.send(addExerciseRes)
     }
 
