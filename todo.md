@@ -1,12 +1,12 @@
-# exercises
-## exercises types [cardio, calistenic, weight]
+[*] exercises
+[*] exercises types [cardio, calistenic, weight]
 
-# routines
-## create routine
-### verify exercises
-### log routine
+[ ] routines
+[ ] create routine
+[ ] verify exercises
+[ ] log routine
 
 
-# eval function
+[ ] eval function
 
-# frontend
+[ ] frontend

@@ -1,5 +1,6 @@
 import ExerciseDAO from '../dao/exerciseDAO.js'
 import UserDAO from '../dao/userDAO.js'
+import ExerciseUtils from '../utils/exercise.js'
 
 export default class ExerciseCtrl {
 
@@ -39,12 +40,24 @@ export default class ExerciseCtrl {
   }
 
   static async apiPostExercise(req, res, _next) {
-    const id = req.params._id
+    const userId = req.body._id
+    const name = req.body.name
+    const category = req.body.category
 
-    const exercise = {
-      "user_id": id,
-      name: req.body.name,
-      category: req.body.category
+    const exercise = ExerciseUtils.exerciseSanitization(
+      userId,
+      name,
+      category
+    )
+
+    if (!ExerciseUtils.isCategoryOk(exercise.category)) {
+      res.send(`Error while posting exercise: category should be one of \{cardio, calisthenics, weights\}`)
+      return
+    }
+
+    if (exercise.error) {
+      res.send(`Error while posting exercise: ${exercise.error}`)
+      return
     }
     const addExerciseRes = await ExerciseDAO.addExercise(exercise)
     res.send(addExerciseRes)
