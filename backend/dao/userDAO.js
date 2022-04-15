@@ -47,4 +47,34 @@ export default class UserDAO {
       return { error: `Unable to insert user: ${err}` }
     }
   }
+
+  static async getRoutine(userId) {
+    try {
+      const routine = await users.findOne(
+        { _id: ObjectId(userId) },
+        { projection: { _id: 0, routine: 1 } }
+      )
+      if (routine === null) {
+        return { error: `Invalid user_id` }
+      }
+      return routine
+    } catch (err) {
+      console.error(`Unable to get user: ${err}`)
+      return { error: `Unable to get user: ${err}` }
+    }
+  }
+
+  static async updateRoutine(userId, routine) {
+    try {
+      const updateResponse = await users.updateOne(
+        { _id: ObjectId(userId) },
+        { $set: { routine: routine } }
+      )
+      return { modified: updateResponse.modifiedCount }
+    } catch (err) {
+      console.error(`Unable to update routine: ${err}`)
+      return { error: `Unable to update user: ${err}` }
+    }
+  }
+
 }

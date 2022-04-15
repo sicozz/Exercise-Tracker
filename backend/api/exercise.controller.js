@@ -14,16 +14,34 @@ export default class ExerciseCtrl {
     const user = {
       username: req.body.username,
       routine: []
-      /*
-      * {
-        * exercise_id,
-        * rounds,
-        * reps,
-      * }
-      */
     }
     const addUserRes = await UserDAO.addUser(user)
     res.send(addUserRes)
+  }
+
+  static async apiPutRoutine(req, res, _next) {
+    const userId = req.body.user_id
+    const routine = req.body.routine
+
+    const isRoutineOk = routine.reduce(
+      (isOk, exercise) => (
+        isOk &&
+        exercise.hasOwnProperty('exercise_id') &&
+        exercise.hasOwnProperty('rounds') &&
+        exercise.hasOwnProperty('reps')
+      ),
+      true
+    )
+
+    if (!isRoutineOk) {
+      res.send({
+        error: "Exercises in routine must have: exercise_id, rounds, reps"
+      })
+      return
+    }
+
+    const resp = await UserDAO.updateRoutine(userId, routine)
+    res.send(resp)
   }
 
   static async apiGetExercises(req, res, _next) {
@@ -32,6 +50,7 @@ export default class ExerciseCtrl {
     const category = req.query.category
 
     const getExercisesRes = await ExerciseDAO.getExercises(
+      undefined,
       userId,
       name,
       category
@@ -61,6 +80,31 @@ export default class ExerciseCtrl {
     }
     const addExerciseRes = await ExerciseDAO.addExercise(exercise)
     res.send(addExerciseRes)
+  }
+
+  static async apiLogRoutine(req, res, _next) {
+    const userId = req.params._id
+
+    const routineResp = await UserDAO.getRoutine(userId)
+    if (routineResp.hasOwnProperty('error')) {
+      res.send(routineResp.error)
+      return
+    }
+
+    const { routine } = routineResp
+    const exercisesIds = routine.map(exercise => exercise.exercise_id)
+    const exercisesResp = await Promise.all(
+      exercisesIds.map(
+        async (exercisesId) => ExerciseDAO.getExercises(exercisesId)
+      )
+    )
+    const exercises = exercisesResp.flat()
+    console.log(exercises)
+    const log = exercises.map(
+      (exercise, i) => Object.assign(exercise, routine[i])
+    )
+
+    res.send({ log })
   }
 
 }

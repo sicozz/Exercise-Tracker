@@ -29,15 +29,19 @@ export default class ExerciseDAO {
     }
   }
 
-  static async getExercises(userId, name, category) {
+  static async getExercises(exerciseId, userId, name, category) {
     const query = {}
-    if (userId) query["user_id"] = userId
+    if (exerciseId) query._id = ObjectId(exerciseId)
+    if (userId) query.user_id = userId
     if (name) query.name = name
     if (category) query.category = category
 
     let cursor
     try {
-      cursor = await exercises.find(query)
+      cursor = await exercises.find(
+        query,
+        { projection: { _id: 0, user_id: 0 } }
+      )
     } catch (err) {
       console.error(`Unable to list exercises: ${err}`)
       return { error: `Unable to list exercises: ${err}` }
@@ -45,14 +49,4 @@ export default class ExerciseDAO {
     return cursor.toArray()
   }
 
-  static exercisesDatesMap(exArr) {
-    return exArr
-      .map(obj => {
-        return Object.assign(
-          {},
-          obj,
-          { date: obj.date.toDateString() }
-        )
-      })
-  }
 }
