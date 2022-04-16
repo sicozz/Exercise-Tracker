@@ -38,10 +38,7 @@ export default class ExerciseDAO {
 
     let cursor
     try {
-      cursor = await exercises.find(
-        query,
-        { projection: { _id: 0, user_id: 0 } }
-      )
+      cursor = await exercises.find(query)
     } catch (err) {
       console.error(`Unable to list exercises: ${err}`)
       return { error: `Unable to list exercises: ${err}` }
