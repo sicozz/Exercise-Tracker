@@ -1,6 +1,7 @@
 import ExerciseDAO from '../dao/exerciseDAO.js'
 import UserDAO from '../dao/userDAO.js'
 import ExerciseUtils from '../utils/exercise.js'
+import UserUtils from '../utils/user.js'
 
 export default class ExerciseCtrl {
 
@@ -11,10 +12,23 @@ export default class ExerciseCtrl {
   }
 
   static async apiPostUser(req, res, _next) {
+    const username = req.body.username
+    if (username == undefined) {
+      res.send({ error: "To create a user you must provide a username" })
+      return
+    }
+
+    const { status, error } = UserUtils.checkUsername(username)
+    if (!status) {
+      res.send({ error })
+      return
+    }
+
     const user = {
-      username: req.body.username,
+      username,
       routine: []
     }
+
     const addUserRes = await UserDAO.addUser(user)
     res.send(addUserRes)
   }
@@ -69,15 +83,16 @@ export default class ExerciseCtrl {
       category
     )
 
+    if (exercise.error) {
+      res.send(`Error while posting exercise: ${exercise.error}`)
+      return
+    }
+
     if (!ExerciseUtils.isCategoryOk(exercise.category)) {
       res.send(`Error while posting exercise: category should be one of \{cardio, calisthenics, weights\}`)
       return
     }
 
-    if (exercise.error) {
-      res.send(`Error while posting exercise: ${exercise.error}`)
-      return
-    }
     const addExerciseRes = await ExerciseDAO.addExercise(exercise)
     res.send(addExerciseRes)
   }
